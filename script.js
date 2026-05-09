@@ -590,6 +590,19 @@ async function scanFridgeImage() {
   }
 }
 
+// Expose inline event handlers globally for Vite deployment
+window.addFood = addFood;
+window.getFoods = getFoods;
+window.getRecipes = getRecipes;
+window.consumeFood = consumeFood;
+window.closeAlerts = closeAlerts;
+window.openAlerts = openAlerts;
+window.scanFridgeImage = scanFridgeImage;
+window.getGroceryList = getGroceryList;
+window.getSuggestion = getSuggestion;
+window.getStats = getStats;
+window.wasteFood = wasteFood;
+window.navTo = navTo;
 
 // 🔄 AUTO LOAD FOODS WHEN PAGE OPENS
 window.onload = () => {
