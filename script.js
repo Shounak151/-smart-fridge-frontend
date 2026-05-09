@@ -330,26 +330,29 @@ async function wasteFood(foodId) {
 
 // 🌍 GET USER STATS & SUSTAINABILITY
 function calculateSustainabilityScore(data) {
-  const wastedCount = Number(data.foodWasted ?? 0);
-  const expiredCount = Number(data.expiredItems ?? data.expiredCount ?? data.expired ?? 0);
-  const consumedBonus = Number(data.consumedBeforeExpiry ?? data.foodSaved ?? 0);
+  console.log("Stats data:", data);
+
+  const wastedCount = Number(data.foodWasted || data.wasted || data.wasteCount || 0);
+  const expiredCount = Number(data.expiredItems || data.expiringSoon || data.expiredCount || 0);
+  const foodSaved = Number(data.foodSaved || data.saved || data.wasteSaved || 0);
 
   let score = 100;
+
   score -= wastedCount * 5;
   score -= expiredCount * 3;
-  score += Math.min(consumedBonus, 20);
+  score += Math.min(foodSaved, 20);
 
-  if (wastedCount === 0 && expiredCount === 0 && consumedBonus === 0) {
-    score = 100;
-  }
+  if (score < 0) score = 0;
+  if (score > 100) score = 100;
 
-  return Math.max(0, Math.min(100, Math.round(score)));
+  return Math.round(score);
 }
 
 async function getStats() {
   try {
     const res = await fetch(`${API}/auth/stats/${USER_ID}`);
     const data = await res.json();
+    console.log("Stats API response:", data);
     const statsContent = document.getElementById("statsContent");
 
     if (res.ok) {
