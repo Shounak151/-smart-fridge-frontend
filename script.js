@@ -332,18 +332,18 @@ async function wasteFood(foodId) {
 function calculateSustainabilityScore(data) {
   console.log("Stats data:", data);
 
-  const wastedCount = Number(data.foodWasted || data.wasted || data.wasteCount || 0);
-  const expiredCount = Number(data.expiredItems || data.expiringSoon || data.expiredCount || 0);
-  const foodSaved = Number(data.foodSaved || data.saved || data.wasteSaved || 0);
+  const wastedCount = Number(data.foodWasted ?? data.wasted ?? data.wasteCount ?? 0);
+  const expiredCount = Number(data.expiredItems ?? data.expiringSoon ?? data.expiredCount ?? 0);
+  const foodSaved = Number(data.foodSaved ?? data.saved ?? data.wasteSaved ?? 0);
 
   let score = 100;
 
-  score -= wastedCount * 5;
+  // Use a milder penalty so the score stays meaningful
+  score -= wastedCount * 2;
   score -= expiredCount * 3;
-  score += Math.min(foodSaved, 20);
+  score += Math.min(foodSaved, 30);
 
-  if (score < 0) score = 0;
-  if (score > 100) score = 100;
+  score = Math.max(0, Math.min(100, score));
 
   return Math.round(score);
 }
@@ -356,11 +356,14 @@ async function getStats() {
     const statsContent = document.getElementById("statsContent");
 
     if (res.ok) {
+      const wastedCount = Number(data.foodWasted ?? data.wasted ?? data.wasteCount ?? 0);
+      const expiredCount = Number(data.expiredItems ?? data.expiringSoon ?? data.expiredCount ?? 0);
+      const foodSaved = Number(data.foodSaved ?? data.saved ?? data.wasteSaved ?? 0);
       const sustainabilityScore = calculateSustainabilityScore(data);
 
       // Update Dashboard Stats
       if (document.getElementById('dash-waste-saved')) {
-        document.getElementById('dash-waste-saved').innerText = data.foodSaved;
+        document.getElementById('dash-waste-saved').innerText = foodSaved;
       }
       if (document.getElementById('dash-sustain-score')) {
         document.getElementById('dash-sustain-score').innerText = `${sustainabilityScore}/100`;
@@ -371,11 +374,11 @@ async function getStats() {
         <div class="stats-grid">
           <div class="stat-box">
             <h4>Food Saved</h4>
-            <div class="val">${data.foodSaved}</div>
+            <div class="val">${foodSaved}</div>
           </div>
           <div class="stat-box">
             <h4>Food Wasted</h4>
-            <div class="val">${data.foodWasted}</div>
+            <div class="val">${wastedCount}</div>
           </div>
           <div class="stat-box">
             <h4>Score</h4>
