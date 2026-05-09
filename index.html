@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NexaFridge | Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <div class="app-layout">
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="logo">
+        <i data-lucide="refrigerator" class="logo-icon"></i>
+        <span>NexaFridge</span>
+      </div>
+      <nav class="sidebar-nav">
+        <a href="#" class="nav-item active" onclick="navTo('page-home', 'Dashboard', this)">
+          <i data-lucide="layout-dashboard"></i> Dashboard
+        </a>
+        <a href="#" class="nav-item" onclick="navTo('page-fridge', 'Food Inventory', this)">
+          <i data-lucide="box"></i> Food Inventory
+        </a>
+        <a href="#" class="nav-item" onclick="navTo('page-grocery', 'Grocery List', this)">
+          <i data-lucide="shopping-cart"></i> Grocery List
+        </a>
+        <a href="#" class="nav-item" onclick="navTo('page-chef', 'Personal Chef', this)">
+          <i data-lucide="chef-hat"></i> Recipes
+        </a>
+        <a href="#" class="nav-item" onclick="navTo('page-gym', 'Gym Macros', this)">
+          <i data-lucide="dumbbell"></i> Nutrition
+        </a>
+        <a href="#" class="nav-item" onclick="navTo('page-stats', 'Sustainability', this)">
+          <i data-lucide="leaf"></i> Sustainability
+        </a>
+      </nav>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+      <header class="top-header">
+        <h1 class="page-title-header" id="header-title">Dashboard</h1>
+        <div class="header-actions">
+          <div class="bell-container" onclick="openAlerts()">
+            <i data-lucide="bell"></i>
+            <span id="alert-badge" class="badge">0</span>
+          </div>
+        </div>
+      </header>
+
+      <div id="app" class="content-area">
+        
+        <!-- HOME DASHBOARD PAGE -->
+        <section id="page-home" class="page active">
+          <!-- Quick Stats -->
+          <div class="stats-overview">
+            <div class="stat-card">
+               <div class="stat-icon blue"><i data-lucide="package"></i></div>
+               <div class="stat-info">
+                 <h4>Total Items</h4>
+                 <div class="val" id="dash-total-items">-</div>
+               </div>
+            </div>
+            <div class="stat-card">
+               <div class="stat-icon red"><i data-lucide="alert-triangle"></i></div>
+               <div class="stat-info">
+                 <h4>Expiring Soon</h4>
+                 <div class="val text-danger" id="dash-expiring-soon">-</div>
+               </div>
+            </div>
+            <div class="stat-card">
+               <div class="stat-icon green"><i data-lucide="recycle"></i></div>
+               <div class="stat-info">
+                 <h4>Waste Saved</h4>
+                 <div class="val text-success" id="dash-waste-saved">-</div>
+               </div>
+            </div>
+            <div class="stat-card">
+               <div class="stat-icon purple"><i data-lucide="activity"></i></div>
+               <div class="stat-info">
+                 <h4>Sustainability</h4>
+                 <div class="val text-accent" id="dash-sustain-score">-</div>
+               </div>
+            </div>
+          </div>
+
+          <!-- Quick Actions -->
+          <div class="section-container">
+            <h2 class="section-title">Quick Actions</h2>
+            <div class="quick-actions">
+               <button class="action-btn" onclick="navTo('page-fridge', 'Food Inventory', document.querySelectorAll('.nav-item')[1])">
+                 <i data-lucide="plus"></i> Add Food
+               </button>
+               <button class="action-btn" onclick="navTo('page-chef', 'Personal Chef', document.querySelectorAll('.nav-item')[3])">
+                 <i data-lucide="utensils"></i> View Recipes
+               </button>
+               <button class="action-btn" onclick="navTo('page-gym', 'Gym Macros', document.querySelectorAll('.nav-item')[4])">
+                 <i data-lucide="target"></i> Log Intake
+               </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- FOOD INVENTORY PAGE -->
+        <section id="page-fridge" class="page">
+          <div class="card">
+            <h2><i data-lucide="scan-line"></i> AI Vision Scanner</h2>
+            <p>Take a photo of your fridge to automatically identify food items!</p>
+            <input type="file" id="fridgeImage" accept="image/*">
+            <button onclick="scanFridgeImage()" style="margin-bottom: 10px;">Scan Fridge Image</button>
+            <ul id="scannedItemsList" style="margin-top: 5px;"></ul>
+          </div>
+
+          <div class="card">
+            <h2><i data-lucide="plus-circle"></i> Add New Food</h2>
+            <div class="form-group">
+              <input id="name" placeholder="E.g., Apple">
+              <input id="quantity" type="number" placeholder="Quantity">
+              <input id="date" type="date">
+              <button onclick="addFood()" class="success">Add to Fridge</button>
+            </div>
+          </div>
+
+          <div class="card">
+            <h2><i data-lucide="refrigerator"></i> Inside Your Fridge</h2>
+            <button onclick="getFoods()" style="margin-bottom: 20px;" class="secondary"><i data-lucide="refresh-cw"></i> Refresh Fridge</button>
+            <ul id="foodList"></ul>
+          </div>
+        </section>
+
+        <!-- GROCERY BUCKET PAGE -->
+        <section id="page-grocery" class="page">
+          <div class="card">
+            <h2><i data-lucide="shopping-basket"></i> Need to Buy</h2>
+            <p>Items you ran out of are automatically added here.</p>
+            <button onclick="getGroceryList()" style="margin-bottom: 20px;" class="secondary"><i data-lucide="refresh-cw"></i> Sync List</button>
+            <ul id="groceryList"></ul>
+          </div>
+        </section>
+
+        <!-- PERSONAL CHEF PAGE -->
+        <section id="page-chef" class="page">
+          <div class="card">
+            <h2><i data-lucide="chef-hat"></i> AI Recipe Generator</h2>
+            <p>Get smart recipes crafted from what's currently in your fridge, prioritizing items about to expire!</p>
+            <button onclick="getRecipes()">Generate Smart Recipes</button>
+            <div id="recipes" style="margin-top: 20px;"></div>
+          </div>
+        </section>
+
+        <!-- GYM MACROS PAGE -->
+        <section id="page-gym" class="page">
+          <div class="card">
+            <h2><i data-lucide="target"></i> Set Daily Targets & AI Meal Plan</h2>
+            <p>Enter your macro goals. The AI Nutritionist will calculate what quantities of your fridge food you should eat.</p>
+            <div class="form-group">
+              <input id="cal" type="number" placeholder="Target Calories (kcal)">
+              <input id="protein" type="number" placeholder="Target Protein (g)">
+              <input id="fat" type="number" placeholder="Target Fat (g)">
+              <button onclick="getSuggestion()" class="success">Calculate My Meals</button>
+            </div>
+            <ul id="suggestion" style="margin-top: 20px;"></ul>
+          </div>
+        </section>
+
+        <!-- SUSTAINABILITY PAGE -->
+        <section id="page-stats" class="page">
+          <div class="card">
+            <h2><i data-lucide="globe"></i> Your Impact</h2>
+            <button onclick="getStats()" style="margin-bottom: 20px;" class="secondary"><i data-lucide="refresh-cw"></i> Refresh Stats</button>
+            <div id="statsContent"></div>
+          </div>
+        </section>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- ALERTS MODAL -->
+  <div id="alerts-modal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeAlerts()">&times;</span>
+      <h2 style="margin-bottom: 20px; color: var(--danger); display: flex; align-items: center; gap: 8px;">
+        <i data-lucide="alert-circle"></i> Expiry Alerts
+      </h2>
+      <ul id="alertsList"></ul>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
