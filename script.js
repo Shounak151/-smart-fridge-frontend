@@ -329,6 +329,23 @@ async function wasteFood(foodId) {
 }
 
 // 🌍 GET USER STATS & SUSTAINABILITY
+function calculateSustainabilityScore(data) {
+  const wastedCount = Number(data.foodWasted ?? 0);
+  const expiredCount = Number(data.expiredItems ?? data.expiredCount ?? data.expired ?? 0);
+  const consumedBonus = Number(data.consumedBeforeExpiry ?? data.foodSaved ?? 0);
+
+  let score = 100;
+  score -= wastedCount * 5;
+  score -= expiredCount * 3;
+  score += Math.min(consumedBonus, 20);
+
+  if (wastedCount === 0 && expiredCount === 0 && consumedBonus === 0) {
+    score = 100;
+  }
+
+  return Math.max(0, Math.min(100, Math.round(score)));
+}
+
 async function getStats() {
   try {
     const res = await fetch(`${API}/auth/stats/${USER_ID}`);
@@ -336,15 +353,17 @@ async function getStats() {
     const statsContent = document.getElementById("statsContent");
 
     if (res.ok) {
+      const sustainabilityScore = calculateSustainabilityScore(data);
+
       // Update Dashboard Stats
       if (document.getElementById('dash-waste-saved')) {
         document.getElementById('dash-waste-saved').innerText = data.foodSaved;
       }
       if (document.getElementById('dash-sustain-score')) {
-        document.getElementById('dash-sustain-score').innerText = `${data.sustainabilityScore}/100`;
+        document.getElementById('dash-sustain-score').innerText = `${sustainabilityScore}/100`;
       }
 
-      const colorClass = data.sustainabilityScore > 50 ? 'green' : 'red';
+      const colorClass = sustainabilityScore > 50 ? 'green' : 'red';
       statsContent.innerHTML = `
         <div class="stats-grid">
           <div class="stat-box">
@@ -357,7 +376,7 @@ async function getStats() {
           </div>
           <div class="stat-box">
             <h4>Score</h4>
-            <div class="val ${colorClass}">${data.sustainabilityScore}/100</div>
+            <div class="val ${colorClass}">${sustainabilityScore}/100</div>
           </div>
         </div>
       `;
