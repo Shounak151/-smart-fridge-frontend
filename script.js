@@ -73,6 +73,9 @@ function navTo(pageId, title, element) {
   }
 }
 
+// Expose navTo globally so inline onclick handlers can call it from module script
+window.navTo = navTo;
+
 // --- ALERTS MODAL LOGIC ---
 function openAlerts() {
   document.getElementById('alerts-modal').classList.add('show');
