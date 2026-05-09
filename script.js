@@ -332,17 +332,28 @@ async function wasteFood(foodId) {
 function calculateSustainabilityScore(data) {
   console.log("Stats data:", data);
 
+  // Historical data from backend
   const wastedCount = Number(data.foodWasted ?? data.wasted ?? data.wasteCount ?? 0);
-  const expiredCount = Number(data.expiredItems ?? data.expiringSoon ?? data.expiredCount ?? 0);
   const foodSaved = Number(data.foodSaved ?? data.saved ?? data.wasteSaved ?? 0);
 
-  let score = 100;
+  // Current fridge state from UI (safely parsed to avoid NaN if UI shows '--' or is loading)
+  const totalText = document.getElementById('dash-total-items')?.innerText || "0";
+  const totalItems = parseInt(totalText) || 0;
 
-  // Use a milder penalty so the score stays meaningful
-  score -= wastedCount * 2;
-  score -= expiredCount * 3;
-  score += Math.min(foodSaved, 30);
+  const expiringText = document.getElementById('dash-expiring-soon')?.innerText || "0";
+  const expiringSoon = parseInt(expiringText) || 0;
 
+  let score = 80; // Base score
+
+  // 1. Current Fridge Health
+  score += totalItems * 1;        // Reward for stocking the fridge (+1 per item)
+  score -= expiringSoon * 5;      // Heavy penalty for items about to expire (-5 per item)
+
+  // 2. Historical Actions
+  score += foodSaved * 1.5;       // Bonus for successfully eating food
+  score -= wastedCount * 1.5;     // Penalty for past waste
+
+  // Ensure score stays between 0 and 100
   score = Math.max(0, Math.min(100, score));
 
   return Math.round(score);
