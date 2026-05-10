@@ -10,52 +10,154 @@
 </head>
 <body>
 
-  <div class="app-layout">
-    <!-- SIDEBAR -->
-    <aside class="sidebar">
-      <div class="logo">
-        <i data-lucide="refrigerator" class="logo-icon"></i>
+  <!-- TOP NAVIGATION BAR -->
+  <nav class="top-navbar">
+    <div class="navbar-container">
+      <div class="navbar-logo">
+        <i data-lucide="refrigerator"></i>
         <span>NexaFridge</span>
       </div>
-      <nav class="sidebar-nav">
-        <a href="#" class="nav-item active" onclick="navTo('page-home', 'Dashboard', this)">
+      
+      <div class="navbar-links">
+        <a href="#" class="navbar-link active" onclick="navTo('page-home', 'Dashboard', this); return false;">
           <i data-lucide="layout-dashboard"></i> Dashboard
         </a>
-        <a href="#" class="nav-item" onclick="navTo('page-fridge', 'Food Inventory', this)">
+        <a href="#" class="navbar-link" onclick="navTo('page-fridge', 'Food Inventory', this); return false;">
           <i data-lucide="box"></i> Food Inventory
         </a>
-        <a href="#" class="nav-item" onclick="navTo('page-grocery', 'Grocery List', this)">
+        <a href="#" class="navbar-link" onclick="navTo('page-grocery', 'Grocery List', this); return false;">
           <i data-lucide="shopping-cart"></i> Grocery List
         </a>
-        <a href="#" class="nav-item" onclick="navTo('page-chef', 'Personal Chef', this)">
+        <a href="#" class="navbar-link" onclick="navTo('page-chef', 'Recipes', this); return false;">
           <i data-lucide="chef-hat"></i> Recipes
         </a>
-        <a href="#" class="nav-item" onclick="navTo('page-gym', 'Gym Macros', this)">
+        <a href="#" class="navbar-link" onclick="navTo('page-gym', 'Nutrition', this); return false;">
           <i data-lucide="dumbbell"></i> Nutrition
         </a>
-        <a href="#" class="nav-item" onclick="navTo('page-stats', 'Sustainability', this)">
+        <a href="#" class="navbar-link" onclick="navTo('page-stats', 'Sustainability', this); return false;">
           <i data-lucide="leaf"></i> Sustainability
         </a>
-      </nav>
-    </aside>
+      </div>
+      
+      <div class="navbar-right">
+        <div class="navbar-support">
+          <i data-lucide="headphones"></i>
+          <span>24/7</span>
+        </div>
+        <div class="bell-container" onclick="openAlerts()">
+          <i data-lucide="bell"></i>
+          <span id="alert-badge" class="badge">0</span>
+        </div>
+        <button class="navbar-auth">
+          <i data-lucide="log-in"></i> Login / Register
+        </button>
+      </div>
+    </div>
+  </nav>
 
+  <div class="app-layout">
     <!-- MAIN CONTENT -->
     <main class="main-content">
-      <header class="top-header">
-        <h1 class="page-title-header" id="header-title">Dashboard</h1>
-        <div class="header-actions">
-          <div class="bell-container" onclick="openAlerts()">
-            <i data-lucide="bell"></i>
-            <span id="alert-badge" class="badge">0</span>
-          </div>
-        </div>
-      </header>
-
       <div id="app" class="content-area">
         
         <!-- HOME DASHBOARD PAGE -->
         <section id="page-home" class="page active">
-          <!-- Quick Stats -->
+          <!-- HERO SECTION -->
+          <div class="hero-section">
+            <div class="hero-container">
+              <!-- Left Content -->
+              <div class="hero-content">
+                <div class="hero-badge">
+                  <i data-lucide="zap"></i>
+                  <span>AI-Powered Smart Fridge Management</span>
+                </div>
+                
+                <h1 class="hero-headline">
+                  Never Waste Food Again.<br>
+                  <span class="gradient-text">Let AI Cook For You.</span>
+                </h1>
+                
+                <p class="hero-subheadline">
+                  NexaFridge tracks your ingredients, predicts expiration, and generates personalized recipes using AI. Save money, reduce waste, and solve "what's for dinner?" in seconds.
+                </p>
+
+                <!-- CTA Buttons -->
+                <div class="hero-buttons">
+                  <button class="hero-btn primary" onclick="navTo('page-fridge', 'Food Inventory', document.querySelectorAll('.nav-item')[1])">
+                    <i data-lucide="plus-circle"></i>
+                    Add Your Ingredients
+                  </button>
+                  <button class="hero-btn secondary" onclick="navTo('page-chef', 'Personal Chef', document.querySelectorAll('.nav-item')[3])">
+                    <i data-lucide="sparkles"></i>
+                    See AI in Action
+                  </button>
+                </div>
+
+                <!-- Value Props -->
+                <div class="value-props">
+                  <div class="value-prop-item">
+                    <i data-lucide="leaf"></i>
+                    <span><strong>Reduce Waste</strong> by 60%</span>
+                  </div>
+                  <div class="value-prop-item">
+                    <i data-lucide="dollar-sign"></i>
+                    <span><strong>Save Money</strong> Every Week</span>
+                  </div>
+                  <div class="value-prop-item">
+                    <i data-lucide="brain"></i>
+                    <span><strong>AI Recipes</strong> in Seconds</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Right Side - AI Feature Cards -->
+              <div class="hero-features">
+                <!-- Feature 1: AI Recipe Generation -->
+                <div class="feature-card ai-magic">
+                  <div class="feature-icon">
+                    <i data-lucide="sparkles"></i>
+                  </div>
+                  <h3>AI Recipe Generator</h3>
+                  <p>Automatically generates recipes from your ingredients, prioritizing items about to expire.</p>
+                  <div class="feature-highlight">
+                    <span class="badge-small">✨ Powered by AI</span>
+                  </div>
+                </div>
+
+                <!-- Feature 2: Smart Expiration Tracking -->
+                <div class="feature-card">
+                  <div class="feature-icon">
+                    <i data-lucide="calendar-alert"></i>
+                  </div>
+                  <h3>Expiration Alerts</h3>
+                  <p>Get notified before food expires. Never discover rotten items in your fridge again.</p>
+                  <div class="feature-highlight">
+                    <span class="badge-small">🔔 Real-time</span>
+                  </div>
+                </div>
+
+                <!-- Feature 3: Nutrition Tracking -->
+                <div class="feature-card">
+                  <div class="feature-icon">
+                    <i data-lucide="target"></i>
+                  </div>
+                  <h3>Nutrition Planning</h3>
+                  <p>Set macro goals and let AI suggest meals that match your fitness objectives.</p>
+                  <div class="feature-highlight">
+                    <span class="badge-small">💪 Personalized</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Decorative Elements -->
+            <div class="hero-decoration">
+              <div class="decoration-circle decoration-1"></div>
+              <div class="decoration-circle decoration-2"></div>
+            </div>
+          </div>
+
+          <!-- Quick Stats (Below Hero) -->
           <div class="stats-overview">
             <div class="stat-card">
                <div class="stat-icon blue"><i data-lucide="package"></i></div>

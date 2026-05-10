@@ -59,17 +59,15 @@ function navTo(pageId, title, element) {
   // Show target page
   document.getElementById(pageId).classList.add('active');
 
-  // Update header title
-  if (title) {
-    document.getElementById('header-title').innerText = title;
-  }
-
-  // Update sidebar active state if an element was passed
-  if (element) {
-    document.querySelectorAll('.nav-item').forEach(nav => {
-      nav.classList.remove('active');
-    });
-    element.classList.add('active');
+  // Update navbar active state - remove active from all links
+  document.querySelectorAll('.navbar-link').forEach(link => {
+    link.classList.remove('active');
+  });
+  
+  // Add active class to the clicked navbar link if it exists
+  const activeLink = document.querySelector(`a.navbar-link[onclick*="${pageId}"]`);
+  if (activeLink) {
+    activeLink.classList.add('active');
   }
 }
 
