@@ -520,30 +520,28 @@ async function fetchPricesFromBackend(items) {
   }
 
   loadingPrices = true;
-  try {
-    const itemNames = items.map(item => item.name);
-    renderGroceryItems(items);
-    const res = await fetch("/api/get-prices", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ items: itemNames })
-    });
+  renderGroceryItems(items);
 
-    if (!res.ok) {
-      throw new Error(`Price API error: ${res.status}`);
+  setTimeout(() => {
+    try {
+      const mockResponse = {
+        potato: "₹30/kg",
+        lemon: "₹100/kg",
+        milk: "₹55/L",
+        apple: "₹150/kg",
+        ginger: "₹120/kg",
+        carrot: "₹40/kg"
+      };
+
+      priceTrends = mockResponse;
+    } catch (error) {
+      console.error("❌ Error fetching price trends:", error);
+      priceTrends = {};
+    } finally {
+      loadingPrices = false;
+      renderGroceryItems(items);
     }
-
-    const data = await res.json();
-    priceTrends = data || {};
-  } catch (error) {
-    console.error("❌ Error fetching price trends:", error);
-    priceTrends = {};
-  } finally {
-    loadingPrices = false;
-    renderGroceryItems(items);
-  }
+  }, 2000);
 }
 
 async function updateGroceryItem(itemId, isPurchased) {
