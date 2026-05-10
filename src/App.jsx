@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useAuth0 } from '@auth0/auth0-react'
 import reactLogo from './assets/react.svg'
 import viteLogo from './assets/vite.svg'
 import heroImg from './assets/hero.png'
@@ -6,10 +7,33 @@ import './App.css'
 
 function App() {
   const [count, setCount] = useState(0)
+  const {
+    isLoading,
+    isAuthenticated,
+    error,
+    loginWithRedirect,
+    logout,
+    user,
+  } = useAuth0();
+
+  if (isLoading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error.message}</div>;
 
   return (
     <>
       <section id="center">
+        <div style={{ marginBottom: "2rem" }}>
+          {isAuthenticated ? (
+            <>
+              <p>Logged in as {user.email}</p>
+              <button onClick={() => logout({ logoutParams: { returnTo: window.location.origin } })}>
+                Log Out
+              </button>
+            </>
+          ) : (
+            <button onClick={() => loginWithRedirect()}>Log In</button>
+          )}
+        </div>
         <div className="hero">
           <img src={heroImg} className="base" width="170" height="179" alt="" />
           <img src={reactLogo} className="framework" alt="React logo" />

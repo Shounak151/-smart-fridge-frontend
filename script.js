@@ -79,11 +79,13 @@ window.navTo = navTo;
 // --- ALERTS MODAL LOGIC ---
 function openAlerts() {
   document.getElementById('alerts-modal').classList.add('show');
+  document.body.style.overflow = 'hidden'; // Prevent background scrolling
   getAlerts();
 }
 
 function closeAlerts() {
   document.getElementById('alerts-modal').classList.remove('show');
+  document.body.style.overflow = ''; // Restore background scrolling
 }
 
 // --- FAQ TOGGLE ---
