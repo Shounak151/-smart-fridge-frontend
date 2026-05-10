@@ -1,5 +1,7 @@
 const API = "https://smart-fridge-backend-8eqn.onrender.com/api";
 const USER_ID = "69ec3da07a68f3b4db0a183f";
+let priceTrends = {};
+let loadingPrices = false;
 
 // 🔧 DEBUG - Check Backend Status
 async function checkBackendStatus() {
@@ -457,24 +459,88 @@ async function getGroceryList() {
     const list = document.getElementById("groceryList");
     list.innerHTML = "";
 
+    const itemsNeededEl = document.getElementById("grocery-items-needed");
+    if (itemsNeededEl) {
+      itemsNeededEl.innerText = res.ok && data.length > 0 ? data.length : 0;
+    }
+
     if (res.ok && data.length > 0) {
-      data.forEach(item => {
-        const li = document.createElement("li");
-        li.innerHTML = `
-          <label style="display:flex; align-items:center; gap:10px; cursor:pointer;">
-            <input type="checkbox" style="width:20px; height:20px;" ${item.isPurchased ? "checked" : ""} onchange="updateGroceryItem('${item._id}', this.checked)">
-            <span style="font-size:1.1rem; text-decoration: ${item.isPurchased ? "line-through" : "none"}; color: ${item.isPurchased ? "var(--text-muted)" : "var(--text)"}">
-              ${item.name} <span style="font-size:0.8em; color:var(--text-muted)">(Qty: ${item.quantity})</span>
-            </span>
-          </label>
-        `;
-        list.appendChild(li);
-      });
+      renderGroceryItems(data);
+      fetchPricesFromBackend(data);
     } else {
       list.innerHTML = "<li>Your grocery list is empty!</li>";
     }
   } catch (error) {
     console.error("❌ Error fetching grocery list:", error);
+  }
+}
+
+function renderGroceryItems(items) {
+  const list = document.getElementById("groceryList");
+  if (!list) return;
+
+  list.innerHTML = "";
+
+  items.forEach(item => {
+    const itemKey = item.name.toLowerCase();
+    const li = document.createElement("li");
+    li.className = "grocery-item-card";
+    li.innerHTML = `
+      <div class="grocery-card-glow"></div>
+      <label class="grocery-item-row">
+        <div class="grocery-left-side">
+          <input type="checkbox" class="grocery-checkbox" ${item.isPurchased ? "checked" : ""} onchange="updateGroceryItem('${item._id}', this.checked)">
+          <div class="grocery-item-copy">
+            <span class="grocery-item-name ${item.isPurchased ? "is-purchased" : ""}">${item.name}</span>
+            ${loadingPrices
+              ? '<span class="grocery-item-meta grocery-price-loading">✨ AI fetching price...</span>'
+              : priceTrends[itemKey]
+                ? `<span class="grocery-item-meta grocery-price-trend">📈 Est. ${priceTrends[itemKey]}</span>`
+                : '<span class="grocery-item-meta">Price unavailable</span>'
+            }
+          </div>
+        </div>
+        <div class="grocery-badges">
+          <span class="grocery-qty-badge">Qty: ${item.quantity}</span>
+          <span class="grocery-status-badge">Low Stock</span>
+        </div>
+      </label>
+    `;
+    list.appendChild(li);
+  });
+}
+
+async function fetchPricesFromBackend(items) {
+  if (!items || items.length === 0) {
+    priceTrends = {};
+    loadingPrices = false;
+    return;
+  }
+
+  loadingPrices = true;
+  try {
+    const itemNames = items.map(item => item.name);
+    renderGroceryItems(items);
+    const res = await fetch("/api/get-prices", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ items: itemNames })
+    });
+
+    if (!res.ok) {
+      throw new Error(`Price API error: ${res.status}`);
+    }
+
+    const data = await res.json();
+    priceTrends = data || {};
+  } catch (error) {
+    console.error("❌ Error fetching price trends:", error);
+    priceTrends = {};
+  } finally {
+    loadingPrices = false;
+    renderGroceryItems(items);
   }
 }
 

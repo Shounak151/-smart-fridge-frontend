@@ -281,11 +281,39 @@
 
         <!-- GROCERY BUCKET PAGE -->
         <section id="page-grocery" class="page">
-          <div class="card">
-            <h2><i data-lucide="shopping-basket"></i> Need to Buy</h2>
-            <p>Items you ran out of are automatically added here.</p>
-            <button onclick="getGroceryList()" style="margin-bottom: 20px;" class="secondary"><i data-lucide="refresh-cw"></i> Sync List</button>
-            <ul id="groceryList"></ul>
+          <div class="grocery-dashboard-shell">
+            <div class="grocery-header-row">
+              <div>
+                <h2 class="grocery-title"><i data-lucide="shopping-basket"></i> Need to Buy</h2>
+                <p class="grocery-subtitle">AI-tracked grocery list</p>
+              </div>
+              <button onclick="getGroceryList()" class="grocery-sync-btn"><i data-lucide="refresh-cw"></i> Sync List</button>
+            </div>
+
+            <div class="grocery-stats-grid">
+              <div class="grocery-stat-card">
+                <span class="grocery-stat-label">Items Needed</span>
+                <strong id="grocery-items-needed" class="grocery-stat-value">0</strong>
+              </div>
+              <div class="grocery-stat-card">
+                <span class="grocery-stat-label">Est. Cost</span>
+                <strong class="grocery-stat-value">₹3,500</strong>
+              </div>
+              <div class="grocery-stat-card">
+                <span class="grocery-stat-label">AI Status</span>
+                <strong class="grocery-stat-value grocery-ai-status">Optimal &amp; Tracking</strong>
+              </div>
+            </div>
+
+            <ul id="groceryList" class="grocery-list-grid"></ul>
+
+            <div class="grocery-ai-panel">
+              <div class="grocery-ai-icon">✨</div>
+              <div>
+                <h3>AI Insights</h3>
+                <p>AI suggests adding Eggs and Butter based on your upcoming Recipe plans.</p>
+              </div>
+            </div>
           </div>
         </section>
 
