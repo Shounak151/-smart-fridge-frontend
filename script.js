@@ -205,6 +205,7 @@ async function getFoods() {
 
     data.forEach(f => {
       const li = document.createElement("li");
+      li.className = "food-item-card";
 
       const calorieText = f.nutrition?.calories 
         ? ` - ${f.nutrition.calories} cal` 
@@ -232,26 +233,30 @@ async function getFoods() {
       let actionButtons = "";
       if (isRotten) {
         actionButtons = `
-          <input type="number" placeholder="Amt" id="amt-${f._id}" style="width: 60px;" value="${f.quantity}">
-          <button onclick="wasteFood('${f._id}')" class="danger" style="padding: 8px 12px; font-size: 0.85em;"><i data-lucide="trash-2"></i> Discard</button>
+          <input type="number" placeholder="Amt" id="amt-${f._id}" class="food-amount-input" value="${f.quantity}">
+          <button onclick="wasteFood('${f._id}')" class="food-secondary-btn danger"><i data-lucide="trash-2"></i> Discard</button>
         `;
       } else {
         actionButtons = `
-          <input type="number" placeholder="Amt" id="amt-${f._id}" style="width: 60px;">
-          <button onclick="consumeFood('${f._id}')" style="padding: 8px 12px; font-size: 0.85em;"><i data-lucide="check"></i> Eat</button>
+          <input type="number" placeholder="Amt" id="amt-${f._id}" class="food-amount-input">
+          <button onclick="consumeFood('${f._id}')" class="food-eat-btn"><i data-lucide="check"></i> Eat</button>
         `;
       }
 
       li.innerHTML = `
+        <div class="food-card-glow"></div>
         <div class="food-header">
-          <div>
-            <b style="font-size:1.2rem; color:var(--accent);">${f.name}</b> 
-            <span style="color:var(--text-muted);">(Qty: ${f.quantity})</span>
+          <div class="food-title-group">
+            <div class="food-header-row">
+              <b class="food-name">${f.name}</b>
+              <span class="food-qty">Qty: ${f.quantity}</span>
+            </div>
           </div>
           <div>${alertBadge}</div>
         </div>
-        <div style="font-size: 0.9em; margin-bottom: 10px;">
-          ${statusText} ${calorieText}
+        <div class="food-chips">
+          ${statusText ? `<span class="food-chip">${f.status}</span>` : ""}
+          ${f.nutrition?.calories ? `<span class="food-chip food-chip-calories"><span>⚡</span><span>${f.nutrition.calories} cal</span></span>` : ""}
         </div>
         <div class="food-actions">
           ${actionButtons}

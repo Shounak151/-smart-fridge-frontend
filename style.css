@@ -1303,6 +1303,196 @@ ul li:hover {
   margin: 0;
 }
 
+/* --- FOOD LIST GRID / CARDS --- */
+#foodList {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+@media (min-width: 768px) {
+  #foodList {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+#foodList li.food-item-card {
+  position: relative;
+  overflow: hidden;
+  background: #13151a;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 24px;
+  padding: 24px;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 220px;
+  animation: slideInUp 0.45s ease forwards;
+  transition: all 0.5s ease;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
+  font-family: var(--font-sans, inherit);
+  font-kerning: normal;
+}
+
+#foodList li.food-item-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(59, 130, 246, 0.3);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+}
+
+#foodList li.food-item-card:hover .food-card-glow {
+  opacity: 1;
+}
+
+#foodList .food-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+#foodList .food-title-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+}
+
+#foodList .food-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+#foodList .food-name {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.9);
+  text-transform: capitalize;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+#foodList .food-qty {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(59, 130, 246, 0.1);
+  color: #60a5fa;
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+#foodList .food-card-glow {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.08), transparent 55%);
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  pointer-events: none;
+}
+
+#foodList .food-chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  margin-bottom: 12px;
+}
+
+#foodList .food-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #d1d5db;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+#foodList .food-chip-calories {
+  background: rgba(249, 115, 22, 0.1);
+  border-color: rgba(249, 115, 22, 0.2);
+  color: #fb923c;
+}
+
+#foodList .food-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: auto;
+  flex-wrap: wrap;
+}
+
+#foodList .food-amount-input {
+  width: 76px;
+  margin: 0;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-main);
+  padding: 10px 12px;
+}
+
+#foodList .food-amount-input:focus {
+  outline: none;
+  border-color: rgba(59, 130, 246, 0.7);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+#foodList .food-eat-btn,
+#foodList .food-secondary-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1;
+  transition: all 0.3s ease;
+  border: 1px solid transparent;
+  cursor: pointer;
+}
+
+#foodList .food-eat-btn {
+  background: #2563eb;
+  color: #fff;
+  flex: 1;
+}
+
+#foodList .food-eat-btn:hover {
+  background: #3b82f6;
+}
+
+#foodList .food-secondary-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: #d1d5db;
+}
+
+#foodList .food-secondary-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
 /* --- ALERTS MODAL --- */
 .modal {
   display: none; 
