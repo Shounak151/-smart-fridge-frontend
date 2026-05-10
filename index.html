@@ -97,7 +97,7 @@
                 <div class="value-props">
                   <div class="value-prop-item">
                     <i data-lucide="leaf"></i>
-                    <span><strong>Reduce Waste</strong> by 60%</span>
+                    <span><strong>Reduce Waste</strong> by 30%</span>
                   </div>
                   <div class="value-prop-item">
                     <i data-lucide="dollar-sign"></i>
@@ -188,24 +188,70 @@
                </div>
             </div>
           </div>
+          
+          <!-- FAQ SECTION IN DASHBOARD -->
+          <div class="faq-container" style="margin-top: 60px;">
+            <div class="faq-header">
+              <p class="faq-eyebrow">Need Help?</p>
+              <h2 class="faq-section-title">Frequently Asked Questions</h2>
+            </div>
 
-          <!-- Quick Actions -->
-          <div class="section-container">
-            <h2 class="section-title">Quick Actions</h2>
-            <div class="quick-actions">
-               <button class="action-btn" onclick="navTo('page-fridge', 'Food Inventory', document.querySelectorAll('.nav-item')[1])">
-                 <i data-lucide="plus"></i> Add Food
-               </button>
-               <button class="action-btn" onclick="navTo('page-chef', 'Personal Chef', document.querySelectorAll('.nav-item')[3])">
-                 <i data-lucide="utensils"></i> View Recipes
-               </button>
-               <button class="action-btn" onclick="navTo('page-gym', 'Gym Macros', document.querySelectorAll('.nav-item')[4])">
-                 <i data-lucide="target"></i> Log Intake
-               </button>
+            <div class="faq-accordion">
+              <!-- FAQ Item 1 -->
+              <div class="faq-item">
+                <button class="faq-question" onclick="toggleFaq(this)" type="button">
+                  <span class="faq-text">How does Nexa work?</span>
+                  <span class="faq-icon">+</span>
+                </button>
+                <div class="faq-answer">
+                  <div class="faq-answer-content">
+                    <p>The Fridge Expiry Engine utilizes computer vision and AI to scan fridge contents, identify ingredients, and generate personalized recipe recommendations based on available items.</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- FAQ Item 2 -->
+              <div class="faq-item">
+                <button class="faq-question" onclick="toggleFaq(this)" type="button">
+                  <span class="faq-text">How are expiry dates managed?</span>
+                  <span class="faq-icon">+</span>
+                </button>
+                <div class="faq-answer">
+                  <div class="faq-answer-content">
+                    <p>The platform tracks freshness timelines for detected ingredients and prioritizes items that are close to spoiling.</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- FAQ Item 3 -->
+              <div class="faq-item">
+                <button class="faq-question" onclick="toggleFaq(this)" type="button">
+                  <span class="faq-text">Does the system support sustainable living?</span>
+                  <span class="faq-icon">+</span>
+                </button>
+                <div class="faq-answer">
+                  <div class="faq-answer-content">
+                    <p>Yes. By reducing unnecessary food waste, the platform promotes eco-friendly and sustainable household practices.</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- FAQ Item 4 -->
+              <div class="faq-item">
+                <button class="faq-question" onclick="toggleFaq(this)" type="button">
+                  <span class="faq-text">Is the platform suitable for everyday use?</span>
+                  <span class="faq-icon">+</span>
+                </button>
+                <div class="faq-answer">
+                  <div class="faq-answer-content">
+                    <p>Absolutely. Fridge Expiry Engine is designed to simplify daily meal planning and intelligent kitchen management.</p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </section>
-
+      
         <!-- FOOD INVENTORY PAGE -->
         <section id="page-fridge" class="page">
           <div class="card">

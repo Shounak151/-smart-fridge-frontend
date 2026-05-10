@@ -84,6 +84,22 @@ function closeAlerts() {
   document.getElementById('alerts-modal').classList.remove('show');
 }
 
+// --- FAQ TOGGLE ---
+function toggleFaq(button) {
+  const faqItem = button.parentElement;
+  const isOpen = faqItem.classList.contains('active');
+  
+  // Close all other open FAQ items
+  document.querySelectorAll('.faq-item.active').forEach(item => {
+    if (item !== faqItem) {
+      item.classList.remove('active');
+    }
+  });
+  
+  // Toggle current FAQ item
+  faqItem.classList.toggle('active');
+}
+
 // Close modal when clicking outside
 window.onclick = function(event) {
   const modal = document.getElementById('alerts-modal');
@@ -636,6 +652,7 @@ window.getGroceryList = getGroceryList;
 window.getSuggestion = getSuggestion;
 window.getStats = getStats;
 window.wasteFood = wasteFood;
+window.toggleFaq = toggleFaq;
 window.navTo = navTo;
 
 // 🔄 AUTO LOAD FOODS WHEN PAGE OPENS
