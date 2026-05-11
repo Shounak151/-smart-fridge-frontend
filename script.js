@@ -531,9 +531,25 @@ window.onclick = function(event) {
 }
 
 // ➕ ADD FOOD
+// 🍎 UPDATE QUANTITY PLACEHOLDER BASED ON SELECTED TYPE
+function updateQuantityPlaceholder() {
+  const quantityType = document.getElementById("quantityType").value;
+  const quantityInput = document.getElementById("quantity");
+  
+  const placeholders = {
+    'grams': 'e.g., 500g',
+    'kilograms': 'e.g., 2kg',
+    'number': 'e.g., 3 pieces'
+  };
+  
+  quantityInput.placeholder = placeholders[quantityType] || 'Enter quantity';
+}
+
+// 🍎 ADD FOOD (UPDATED WITH QUANTITY TYPE)
 async function addFood() {
   const auth = getCurrentAuthContext();
   const name = document.getElementById("name").value;
+  const quantityType = document.getElementById("quantityType").value;
   const quantity = document.getElementById("quantity").value;
   const purchaseDate = document.getElementById("date").value;
 
@@ -542,13 +558,13 @@ async function addFood() {
     return;
   }
 
-  if (!name || !quantity || !purchaseDate) {
+  if (!name || !quantityType || !quantity || !purchaseDate) {
     alert("Please fill all fields");
     return;
   }
 
   try {
-    console.log("📤 Sending food data:", { name, quantity, purchaseDate, userId: auth.userId });
+    console.log("📤 Sending food data:", { name, quantity, quantityType, purchaseDate, userId: auth.userId });
     
     const res = await fetch(`${API}/food/add`, {
       method: "POST",
@@ -558,6 +574,7 @@ async function addFood() {
       body: JSON.stringify({
         name,
         quantity: parseInt(quantity),
+        quantityType,
         purchaseDate,
         userId: auth.userId,
         userName: auth.name,
@@ -572,8 +589,10 @@ async function addFood() {
     if (res.ok) {
       alert("✅ Food added successfully!");
       document.getElementById("name").value = "";
+      document.getElementById("quantityType").value = "";
       document.getElementById("quantity").value = "";
       document.getElementById("date").value = "";
+      updateQuantityPlaceholder();
       getFoods(); // refresh
     } else {
       alert("❌ Error: " + (data.error || "Unknown error"));
@@ -687,7 +706,7 @@ async function getFoods() {
           <div class="food-title-group">
             <div class="food-header-row">
               <b class="food-name">${f.name}</b>
-              <span class="food-qty">Qty: ${f.quantity}</span>
+              <span class="food-qty">Qty: ${f.quantity}${f.quantityType ? (f.quantityType === 'number' ? ' pcs' : (f.quantityType === 'grams' ? 'g' : 'kg')) : ''}</span>
             </div>
           </div>
           <div>${alertBadge}</div>
@@ -1162,6 +1181,7 @@ async function scanFridgeImage() {
 
 // Expose inline event handlers globally for Vite deployment
 window.addFood = addFood;
+window.updateQuantityPlaceholder = updateQuantityPlaceholder;
 window.getFoods = getFoods;
 window.getRecipes = getRecipes;
 window.openChefBot = openChefBot;

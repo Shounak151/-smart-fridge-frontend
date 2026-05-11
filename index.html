@@ -261,7 +261,17 @@
             <h2><i data-lucide="plus-circle"></i> Add New Food</h2>
             <div class="form-group">
               <input id="name" placeholder="E.g., Apple">
-              <input id="quantity" type="number" placeholder="Quantity">
+              
+              <div class="quantity-row">
+                <select id="quantityType" class="quantity-type-select" onchange="updateQuantityPlaceholder()">
+                  <option value="" selected disabled>Select Unit</option>
+                  <option value="grams">Grams (g)</option>
+                  <option value="kilograms">Kilograms (kg)</option>
+                  <option value="number">Number (pieces)</option>
+                </select>
+                <input id="quantity" type="number" placeholder="Enter quantity" class="quantity-input">
+              </div>
+              
               <input id="date" type="date">
               <button onclick="addFood()" class="success">Add to Fridge</button>
             </div>
