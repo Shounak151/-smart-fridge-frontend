@@ -109,15 +109,26 @@
   transition: all 0.3s ease;
 }
 
-.navbar-logo i {
-  width: 24px;
-  height: 24px;
-  color: var(--accent);
-  transition: all 0.3s ease;
+.navbar-logo-mark {
+  width: 34px;
+  height: 34px;
+  display: block;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  box-shadow: 0 8px 18px rgba(59, 130, 246, 0.18);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-.navbar-logo:hover i {
-  transform: scale(1.1) rotate(8deg);
+.navbar-logo-text {
+  font-size: 1rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--text-main);
+}
+
+.navbar-logo:hover .navbar-logo-mark {
+  transform: translateY(-1px) rotate(-4deg) scale(1.04);
+  box-shadow: 0 10px 22px rgba(59, 130, 246, 0.28);
 }
 
 .navbar-links {
