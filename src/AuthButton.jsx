@@ -1,6 +1,24 @@
 import { useAuth0 } from '@auth0/auth0-react';
 import { useEffect, useRef } from 'react';
 
+function getDisplayName(u) {
+  if (!u) return 'User';
+
+  if (u.given_name || u.family_name) {
+    return `${u.given_name || ''} ${u.family_name || ''}`.trim();
+  }
+
+  if (u.name && !u.name.includes('@')) {
+    return u.name;
+  }
+
+  const prefix = (u.nickname || u.email?.split('@')[0] || '').replace(/[0-9_.-]/g, ' ').trim();
+  return prefix
+    .split(/\s+/)
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ') || 'User';
+}
+
 function AuthButton() {
   const {
     isLoading,
@@ -10,6 +28,7 @@ function AuthButton() {
     user,
   } = useAuth0();
   const containerRef = useRef(null);
+  const displayName = getDisplayName(user);
 
   // Safely create icons avoiding React DOM drift errors
   useEffect(() => {
@@ -19,6 +38,23 @@ function AuthButton() {
       });
     }
   });
+
+  useEffect(() => {
+    const authContext = isAuthenticated
+      ? {
+          userId: user?.sub || '',
+          name: displayName,
+          email: user?.email || '',
+        }
+      : {
+          userId: '',
+          name: '',
+          email: '',
+        };
+
+    window.freshbyteAuth = authContext;
+    window.dispatchEvent(new CustomEvent('freshbyte-auth-changed', { detail: authContext }));
+  }, [displayName, isAuthenticated, user]);
 
   if (isLoading) {
     return (
@@ -31,27 +67,6 @@ function AuthButton() {
   }
 
   if (isAuthenticated) {
-    // Attempt to get the real name from Auth0 (e.g., from Google Login) or format the email prefix intelligently
-    const getDisplayName = (u) => {
-      if (!u) return 'User';
-      // 1. Prioritize real name components from social providers
-      if (u.given_name || u.family_name) {
-        return `${u.given_name || ''} ${u.family_name || ''}`.trim();
-      }
-      // 2. Use the full name if it's provided and not just an email
-      if (u.name && !u.name.includes('@')) {
-        return u.name;
-      }
-      // 3. Fallback: optimize the email prefix by removing numbers/special chars and capitalizing
-      let prefix = (u.nickname || u.email?.split('@')[0] || '').replace(/[0-9_.-]/g, ' ').trim();
-      return prefix
-        .split(/\s+/)
-        .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-        .join(' ') || 'User';
-    };
-
-    const displayName = getDisplayName(user);
-
     return (
       <div ref={containerRef} style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
         <span style={{ fontSize: '0.9rem', color: '#4b5563', fontWeight: '500' }}>{displayName}</span>

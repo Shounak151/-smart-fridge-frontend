@@ -12,6 +12,11 @@ if (authRoot) {
         domain="freshbyte.us.auth0.com"
         clientId="hx8oY97MMIB283C3KphLSQyKA9JSY1au"
         authorizationParams={{ redirect_uri: window.location.origin }}
+        cacheLocation="localstorage"
+        useRefreshTokens={true}
+        onRedirectCallback={() => {
+          window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
+        }}
       >
         <AuthButton />
       </Auth0Provider>

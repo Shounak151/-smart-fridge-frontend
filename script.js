@@ -1,7 +1,85 @@
 const API = "https://smart-fridge-backend-8eqn.onrender.com/api";
-const USER_ID = "69ec3da07a68f3b4db0a183f";
 let priceTrends = {};
 let loadingPrices = false;
+
+function getCurrentAuthContext() {
+  const auth = window.freshbyteAuth || {};
+  return {
+    userId: auth.userId || "",
+    name: auth.name || "",
+    email: auth.email || "",
+  };
+}
+
+function getCurrentUserId() {
+  return getCurrentAuthContext().userId;
+}
+
+function updateSignedOutState() {
+  const foodList = document.getElementById("foodList");
+  if (foodList) {
+    foodList.innerHTML = "<li>Please log in to view your fridge.</li>";
+  }
+
+  const statsContent = document.getElementById("statsContent");
+  if (statsContent) {
+    statsContent.innerHTML = "<p>Please log in to view your stats.</p>";
+  }
+
+  const alertsList = document.getElementById("alertsList");
+  if (alertsList) {
+    alertsList.innerHTML = "<li>Please log in to view alerts.</li>";
+  }
+
+  const groceryList = document.getElementById("groceryList");
+  if (groceryList) {
+    groceryList.innerHTML = "<li>Please log in to view your grocery list.</li>";
+  }
+
+  const recipes = document.getElementById("recipes");
+  if (recipes) {
+    recipes.innerHTML = "<p>Please log in to see personalized recipes.</p>";
+  }
+
+  const suggestion = document.getElementById("suggestion");
+  if (suggestion) {
+    suggestion.innerHTML = "<li>Please log in to see meal suggestions.</li>";
+  }
+
+  const totalItems = document.getElementById('dash-total-items');
+  if (totalItems) totalItems.innerText = "0";
+
+  const expiringSoon = document.getElementById('dash-expiring-soon');
+  if (expiringSoon) expiringSoon.innerText = "0";
+
+  const wasteSaved = document.getElementById('dash-waste-saved');
+  if (wasteSaved) wasteSaved.innerText = "0";
+
+  const sustainScore = document.getElementById('dash-sustain-score');
+  if (sustainScore) sustainScore.innerText = "0/100";
+
+  const alertBadge = document.getElementById('alert-badge');
+  if (alertBadge) alertBadge.innerText = "0";
+
+  const groceryItemsNeeded = document.getElementById("grocery-items-needed");
+  if (groceryItemsNeeded) groceryItemsNeeded.innerText = "0";
+}
+
+function refreshCurrentUserData() {
+  const userId = getCurrentUserId();
+  if (!userId) {
+    updateSignedOutState();
+    return;
+  }
+
+  getFoods();
+  getStats();
+  getAlerts();
+  getGroceryList();
+  getRecipes();
+}
+
+window.addEventListener("freshbyte-auth-changed", refreshCurrentUserData);
 
 // 🔧 DEBUG - Check Backend Status
 async function checkBackendStatus() {
@@ -114,9 +192,15 @@ window.onclick = function(event) {
 
 // ➕ ADD FOOD
 async function addFood() {
+  const auth = getCurrentAuthContext();
   const name = document.getElementById("name").value;
   const quantity = document.getElementById("quantity").value;
   const purchaseDate = document.getElementById("date").value;
+
+  if (!auth.userId) {
+    alert("Please log in first.");
+    return;
+  }
 
   if (!name || !quantity || !purchaseDate) {
     alert("Please fill all fields");
@@ -124,7 +208,7 @@ async function addFood() {
   }
 
   try {
-    console.log("📤 Sending food data:", { name, quantity, purchaseDate, userId: USER_ID });
+    console.log("📤 Sending food data:", { name, quantity, purchaseDate, userId: auth.userId });
     
     const res = await fetch(`${API}/food/add`, {
       method: "POST",
@@ -135,7 +219,9 @@ async function addFood() {
         name,
         quantity: parseInt(quantity),
         purchaseDate,
-        userId: USER_ID
+        userId: auth.userId,
+        userName: auth.name,
+        userEmail: auth.email
       })
     });
 
@@ -168,9 +254,15 @@ async function getFoods() {
   const list = document.getElementById("foodList");
   list.innerHTML = "<li>Loading...</li>";
 
+  const userId = getCurrentUserId();
+  if (!userId) {
+    updateSignedOutState();
+    return;
+  }
+
   try {
-    console.log("🌐 API URL:", `${API}/food`);
-    const res = await fetch(`${API}/food`, {
+    console.log("🌐 API URL:", `${API}/food?userId=${encodeURIComponent(userId)}`);
+    const res = await fetch(`${API}/food?userId=${encodeURIComponent(userId)}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json"
@@ -287,7 +379,13 @@ async function getFoods() {
 
 // 🍽️ CONSUME FOOD (NO ID INPUT NEEDED)
 async function consumeFood(foodId) {
+  const auth = getCurrentAuthContext();
   const amount = document.getElementById(`amt-${foodId}`).value;
+
+  if (!auth.userId) {
+    alert("Please log in first.");
+    return;
+  }
 
   if (!amount || amount <= 0) {
     alert("Enter valid amount");
@@ -303,7 +401,9 @@ async function consumeFood(foodId) {
       body: JSON.stringify({
         foodId,
         quantityConsumed: parseInt(amount),
-        userId: USER_ID
+        userId: auth.userId,
+        userName: auth.name,
+        userEmail: auth.email
       })
     });
 
@@ -320,7 +420,13 @@ async function consumeFood(foodId) {
 
 // 🗑️ WASTE FOOD
 async function wasteFood(foodId) {
+  const auth = getCurrentAuthContext();
   const amount = document.getElementById(`amt-${foodId}`).value;
+
+  if (!auth.userId) {
+    alert("Please log in first.");
+    return;
+  }
 
   if (!amount || amount <= 0) {
     alert("❌ Enter valid amount");
@@ -336,7 +442,9 @@ async function wasteFood(foodId) {
       body: JSON.stringify({
         foodId,
         quantityWasted: parseInt(amount),
-        userId: USER_ID
+        userId: auth.userId,
+        userName: auth.name,
+        userEmail: auth.email
       })
     });
 
@@ -383,8 +491,14 @@ function calculateSustainabilityScore(data) {
 }
 
 async function getStats() {
+  const userId = getCurrentUserId();
+  if (!userId) {
+    updateSignedOutState();
+    return;
+  }
+
   try {
-    const res = await fetch(`${API}/auth/stats/${USER_ID}`);
+    const res = await fetch(`${API}/auth/stats/${encodeURIComponent(userId)}`);
     const data = await res.json();
     console.log("Stats API response:", data);
     const statsContent = document.getElementById("statsContent");
@@ -430,8 +544,14 @@ async function getStats() {
 
 // 🔔 GET ALERTS
 async function getAlerts() {
+  const userId = getCurrentUserId();
+  if (!userId) {
+    updateSignedOutState();
+    return;
+  }
+
   try {
-    const res = await fetch(`${API}/alerts/${USER_ID}`);
+    const res = await fetch(`${API}/alerts/${encodeURIComponent(userId)}`);
     const data = await res.json();
     const list = document.getElementById("alertsList");
     list.innerHTML = "";
@@ -455,8 +575,14 @@ async function getAlerts() {
 
 // 🛒 GET GROCERY LIST
 async function getGroceryList() {
+  const userId = getCurrentUserId();
+  if (!userId) {
+    updateSignedOutState();
+    return;
+  }
+
   try {
-    const res = await fetch(`${API}/grocery/${USER_ID}`);
+    const res = await fetch(`${API}/grocery/${encodeURIComponent(userId)}`);
     const data = await res.json();
     const list = document.getElementById("groceryList");
     list.innerHTML = "";
@@ -622,12 +748,21 @@ async function getSuggestion() {
 
 // 🧑‍🍳 GET AI CHEF RECIPES
 async function getRecipes() {
+  const userId = getCurrentUserId();
+  if (!userId) {
+    const div = document.getElementById("recipes");
+    if (div) {
+      div.innerHTML = "<p>Please log in to see personalized recipes.</p>";
+    }
+    return;
+  }
+
   try {
     const div = document.getElementById("recipes");
     div.innerHTML = "<p><i data-lucide=\"loader\"></i> AI Chef is crafting your personalized recipes...</p>";
 
     console.log("Fetching AI recipes...");
-    const res = await fetch(`${API}/recipes/suggest?userId=${USER_ID}`);
+    const res = await fetch(`${API}/recipes/suggest?userId=${encodeURIComponent(userId)}`);
 
     if (!res.ok) {
       throw new Error("Server error: " + res.status);
@@ -728,10 +863,7 @@ window.navTo = navTo;
 
 // 🔄 AUTO LOAD FOODS WHEN PAGE OPENS
 window.onload = () => {
-  getFoods();
-  getStats();
-  getAlerts();
-  getGroceryList();
+  refreshCurrentUserData();
   
   if (window.lucide) {
     lucide.createIcons();
