@@ -315,9 +315,17 @@
         <!-- PERSONAL CHEF PAGE -->
         <section id="page-chef" class="page">
           <div class="card">
-            <h2><i data-lucide="chef-hat"></i> AI Recipe Generator</h2>
-            <p>Get smart recipes crafted from what's currently in your fridge, prioritizing items about to expire!</p>
-            <button onclick="getRecipes()">Generate Smart Recipes</button>
+            <h2><i data-lucide="chef-hat"></i> AI Chef Chat</h2>
+            <p>Chat with ChefBot to get recipes tailored to your region, your fridge, and your cooking preferences.</p>
+            <button onclick="openChefBot()">Chat with AI Chef</button>
+            <div class="chefbot-status" id="chefbot-status">Step 1: Tell ChefBot where you are, or what cuisine you want today.</div>
+            <div id="chefbot-panel" class="chefbot-panel hidden">
+              <div id="chefbot-log" class="chefbot-log" aria-live="polite"></div>
+              <div class="chefbot-compose">
+                <input id="chefbot-input" type="text" placeholder="Type your answer here...">
+                <button id="chefbot-send" class="success" onclick="sendChefBotMessage()">Send</button>
+              </div>
+            </div>
             <div id="recipes" style="margin-top: 20px;"></div>
           </div>
         </section>

@@ -1,6 +1,21 @@
 const API = "https://smart-fridge-backend-8eqn.onrender.com/api";
 let priceTrends = {};
 let loadingPrices = false;
+window.currentFoods = [];
+
+const chefBotState = {
+  step: 'location',
+  location: '',
+  ingredientsText: '',
+  ingredients: [],
+  expiringSoon: [],
+  mealType: '',
+  dietary: '',
+  timeLimit: '',
+  options: [],
+  chosenOption: null,
+  started: false,
+};
 
 function getCurrentAuthContext() {
   const auth = window.freshbyteAuth || {};
@@ -80,6 +95,331 @@ function refreshCurrentUserData() {
 }
 
 window.addEventListener("freshbyte-auth-changed", refreshCurrentUserData);
+
+function getCurrentFoodInventory() {
+  return Array.isArray(window.currentFoods) ? window.currentFoods : [];
+}
+
+function getSuggestedExpiringItems() {
+  return getCurrentFoodInventory()
+    .filter(food => {
+      const status = String(food.status || '').toLowerCase();
+      return status.includes('high') || status.includes('expiring') || status.includes('rotten');
+    })
+    .map(food => food.name)
+    .filter(Boolean);
+}
+
+function parseIngredientList(text) {
+  return text
+    .split(/,|\n| and /i)
+    .map(item => item.trim())
+    .filter(Boolean)
+    .map(item => item.replace(/^[-*•\d.\s]+/, ''));
+}
+
+function normalizeText(value) {
+  return String(value || '').trim();
+}
+
+function escapeHtml(value) {
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function appendChefMessage(role, content) {
+  const log = document.getElementById('chefbot-log');
+  if (!log) return;
+
+  const row = document.createElement('div');
+  row.className = `chefbot-message ${role}`;
+  row.innerHTML = `<div class="chefbot-bubble">${escapeHtml(content)}</div>`;
+  log.appendChild(row);
+  log.scrollTop = log.scrollHeight;
+}
+
+function setChefStatus(text) {
+  const status = document.getElementById('chefbot-status');
+  if (status) {
+    status.textContent = text;
+  }
+}
+
+function setChefInputPlaceholder(text) {
+  const input = document.getElementById('chefbot-input');
+  if (input) {
+    input.placeholder = text;
+  }
+}
+
+function setChefPrompt(text) {
+  appendChefMessage('bot', text);
+}
+
+function openChefBot() {
+  const panel = document.getElementById('chefbot-panel');
+  const log = document.getElementById('chefbot-log');
+  if (!panel || !log) return;
+
+  panel.classList.remove('hidden');
+  log.innerHTML = '';
+
+  const inventory = getCurrentFoodInventory();
+  const expiring = getSuggestedExpiringItems();
+
+  chefBotState.step = 'location';
+  chefBotState.location = '';
+  chefBotState.ingredientsText = '';
+  chefBotState.ingredients = [];
+  chefBotState.expiringSoon = expiring;
+  chefBotState.mealType = '';
+  chefBotState.dietary = '';
+  chefBotState.timeLimit = '';
+  chefBotState.options = [];
+  chefBotState.chosenOption = null;
+  chefBotState.started = true;
+
+  const inventoryText = inventory.length
+    ? ` I can already see ${inventory.map(item => item.name).join(', ')}${expiring.length ? `, and ${expiring.join(', ')} are looking urgent.` : '.'}`
+    : ' I do not see fridge data yet, so please list what you have.';
+
+  setChefStatus('Step 1: Tell ChefBot where you are or what regional cuisine you want today.');
+  setChefInputPlaceholder('Example: Mumbai, India');
+  setChefPrompt(`Hello! I’m ChefBot.${inventoryText} Where are you located right now, or what region’s cuisine are you craving today?`);
+  panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function extractLocationFlavor(location) {
+  const value = location.toLowerCase();
+  if (value.includes('india') || value.includes('mumbai') || value.includes('delhi') || value.includes('punjab')) {
+    return {
+      vibe: 'warm, spiced, and aromatic',
+      style: 'Indian',
+      herbs: ['cumin', 'coriander', 'turmeric', 'garam masala'],
+      base: 'masala',
+    };
+  }
+  if (value.includes('mex') || value.includes('tex') || value.includes('latin')) {
+    return {
+      vibe: 'bright, zesty, and smoky',
+      style: 'Mexican-inspired',
+      herbs: ['cumin', 'chili', 'lime', 'smoked paprika'],
+      base: 'roasted salsa',
+    };
+  }
+  if (value.includes('ital')) {
+    return {
+      vibe: 'herby, comforting, and savory',
+      style: 'Italian-inspired',
+      herbs: ['oregano', 'basil', 'garlic', 'black pepper'],
+      base: 'tomato herb sauce',
+    };
+  }
+  if (value.includes('thai')) {
+    return {
+      vibe: 'fragrant, tangy, and lively',
+      style: 'Thai-inspired',
+      herbs: ['lemongrass', 'lime', 'chili', 'garlic'],
+      base: 'coconut-lime',
+    };
+  }
+
+  return {
+    vibe: 'balanced and flexible',
+    style: 'regional',
+    herbs: ['garlic', 'onion', 'pepper', 'fresh herbs'],
+    base: 'savory pan sauce',
+  };
+}
+
+function buildChefOptions() {
+  const flavor = extractLocationFlavor(chefBotState.location);
+  const ingredients = chefBotState.ingredients.length ? chefBotState.ingredients : chefBotState.expiringSoon;
+  const topIngredients = ingredients.slice(0, 4).join(', ') || 'the items from your fridge';
+  const meal = chefBotState.mealType || 'meal';
+  const time = chefBotState.timeLimit || '30 minutes';
+
+  const optionA = {
+    title: `Option 1: ${flavor.style} Skillet with ${topIngredients}`,
+    description: `A ${flavor.vibe} ${meal.toLowerCase()} built around ${topIngredients}, finished with ${flavor.base}.`,
+    time: time,
+    ingredients: ingredients.slice(0, 6),
+    fullRecipe: buildFullRecipe('A', flavor, ingredients),
+  };
+
+  const optionB = {
+    title: `Option 2: Quick ${flavor.style} Fusion Bowl`,
+    description: `A faster, more flexible bowl that uses your fridge items with ${flavor.herbs.join(', ')} for strong flavor.`,
+    time: time,
+    ingredients: ingredients.slice(0, 6),
+    fullRecipe: buildFullRecipe('B', flavor, ingredients),
+  };
+
+  chefBotState.options = [optionA, optionB];
+}
+
+function buildFullRecipe(optionKey, flavor, ingredients) {
+  const list = ingredients.length ? ingredients : ['your available fridge ingredients'];
+  if (optionKey === 'A') {
+    return {
+      title: `ChefBot Pick A`,
+      ingredients: list,
+      servings: 2,
+      time: chefBotState.timeLimit || '30 minutes',
+      steps: [
+        `Prep all ingredients: chop ${list.slice(0, 4).join(', ')} and keep any expiring items aside first.`,
+        `Heat oil or ghee in a pan. Add onions, garlic, and ${flavor.herbs.slice(0, 2).join(' plus ')} until fragrant.`,
+        `Stir in the main ingredients and cook until everything is warmed through and well coated.`,
+        `Finish with the regional seasoning style for a ${flavor.vibe} taste, then serve hot.`,
+      ],
+    };
+  }
+
+  return {
+    title: `ChefBot Pick B`,
+    ingredients: list,
+    servings: 2,
+    time: chefBotState.timeLimit || '30 minutes',
+    steps: [
+      `Cook your base ingredient first, especially any expiring item, so nothing goes to waste.`,
+      `Add vegetables and protein with ${flavor.herbs.join(', ')} for a quick flavor boost.`,
+      `Toss everything together with a small sauce or seasoning mix and let it finish in the pan.`,
+      `Taste, adjust salt or spice, and serve immediately while it is fresh and hot.`,
+    ],
+  };
+}
+
+function renderRecipeOptions() {
+  const recipes = document.getElementById('recipes');
+  if (!recipes) return;
+
+  const optionsMarkup = chefBotState.options.map((option, index) => `
+    <div class="recipe-card chefbot-option-card">
+      <h3>${escapeHtml(option.title)}</h3>
+      <p class="desc">${escapeHtml(option.description)}</p>
+      <p><strong>Time:</strong> ${escapeHtml(option.time)}</p>
+      <button class="secondary" onclick="chooseChefOption(${index})">Choose this one</button>
+    </div>
+  `).join('');
+
+  recipes.innerHTML = `
+    <div class="chefbot-recommendations">
+      <p class="chefbot-recommendation-intro">Here are two recipe ideas inspired by ${chefBotState.location || 'your location'}.</p>
+      ${optionsMarkup}
+    </div>
+  `;
+}
+
+function renderFullRecipe(option) {
+  const recipes = document.getElementById('recipes');
+  if (!recipes || !option) return;
+
+  recipes.innerHTML = `
+    <div class="recipe-card chefbot-full-recipe">
+      <h3>${escapeHtml(option.fullRecipe.title)}</h3>
+      <p class="desc">A personalized recipe for ${escapeHtml(chefBotState.location || 'your region')} with ${escapeHtml(chefBotState.mealType || 'your chosen meal')} vibes.</p>
+      <p><strong>Servings:</strong> ${escapeHtml(option.fullRecipe.servings)} | <strong>Time:</strong> ${escapeHtml(option.fullRecipe.time)}</p>
+      <h4>Ingredients</h4>
+      <ul>
+        ${option.fullRecipe.ingredients.map(item => `<li>${escapeHtml(item)}</li>`).join('')}
+      </ul>
+      <h4>Instructions</h4>
+      <ol>
+        ${option.fullRecipe.steps.map(step => `<li>${escapeHtml(step)}</li>`).join('')}
+      </ol>
+    </div>
+  `;
+}
+
+function chooseChefOption(index) {
+  const option = chefBotState.options[index];
+  if (!option) return;
+
+  chefBotState.chosenOption = option;
+  appendChefMessage('bot', `Great choice. I’ll expand ${option.title} into a full step-by-step recipe now.`);
+  renderFullRecipe(option);
+  setChefStatus('ChefBot has generated your full recipe.');
+  setChefInputPlaceholder('You can ask for another version or start over.');
+  chefBotState.step = 'done';
+}
+
+function sendChefBotMessage() {
+  const input = document.getElementById('chefbot-input');
+  if (!input) return;
+
+  const message = normalizeText(input.value);
+  if (!message) return;
+
+  appendChefMessage('user', message);
+  input.value = '';
+
+  if (chefBotState.step === 'location') {
+    chefBotState.location = message;
+    const inventory = getCurrentFoodInventory();
+    const expiring = getSuggestedExpiringItems();
+    chefBotState.expiringSoon = expiring;
+    chefBotState.step = 'ingredients';
+    setChefStatus('Step 2: Tell ChefBot what is in your fridge.');
+    setChefInputPlaceholder('Example: paneer, spinach, onions, rice');
+    appendChefMessage('bot', `Fantastic choice. ${message} has such a rich food culture. Now, list the ingredients you currently have in your fridge. If something is about to expire, call it out so I can prioritize it first.${inventory.length ? ` I already see ${inventory.map(item => item.name).join(', ')} in your fridge${expiring.length ? `, with ${expiring.join(', ')} needing attention.` : '.'}` : ''}`);
+    return;
+  }
+
+  if (chefBotState.step === 'ingredients') {
+    chefBotState.ingredientsText = message;
+    chefBotState.ingredients = parseIngredientList(message);
+    chefBotState.step = 'preferences';
+    setChefStatus('Step 3: Tell ChefBot the meal type, diet, and time limit.');
+    setChefInputPlaceholder('Example: Dinner, vegetarian, under 30 minutes');
+    appendChefMessage('bot', `Perfect. Before I cook, what meal are you making today - breakfast, lunch, dinner, or a snack? Also tell me any dietary restrictions and how much time you have.`);
+    return;
+  }
+
+  if (chefBotState.step === 'preferences') {
+    const lower = message.toLowerCase();
+    chefBotState.mealType = lower.includes('breakfast') ? 'Breakfast' : lower.includes('lunch') ? 'Lunch' : lower.includes('snack') ? 'Snack' : 'Dinner';
+    chefBotState.dietary = message;
+
+    const timeMatch = message.match(/\b(\d{1,3})\s*(minutes?|mins?)\b/i);
+    chefBotState.timeLimit = timeMatch ? `${timeMatch[1]} minutes` : '30 minutes';
+
+    buildChefOptions();
+    chefBotState.step = 'choice';
+    setChefStatus('Step 4: Choose one of the two recipes.');
+    setChefInputPlaceholder('Type 1 or 2 to choose a recipe');
+    appendChefMessage('bot', 'Got it. Based on your location, ingredients, and preferences, I have prepared two options. Pick 1 or 2, and I will give you the full recipe.');
+    renderRecipeOptions();
+    return;
+  }
+
+  if (chefBotState.step === 'choice') {
+    if (message.includes('1')) {
+      chooseChefOption(0);
+      return;
+    }
+
+    if (message.includes('2')) {
+      chooseChefOption(1);
+      return;
+    }
+
+    appendChefMessage('bot', 'Please type 1 or 2 to choose the recipe you want me to expand.');
+    return;
+  }
+
+  if (chefBotState.step === 'done') {
+    if (message.toLowerCase().includes('start over') || message.toLowerCase().includes('restart')) {
+      openChefBot();
+      return;
+    }
+
+    appendChefMessage('bot', 'If you want another version, type restart and I will begin again with a new set of questions.');
+  }
+}
 
 // 🔧 DEBUG - Check Backend Status
 async function checkBackendStatus() {
@@ -281,6 +621,8 @@ async function getFoods() {
     const data = await res.json();
     console.log("Data received:", data);
     console.log("Data length:", data ? data.length : 0);
+
+    window.currentFoods = Array.isArray(data) ? data : [];
 
     list.innerHTML = "";
 
@@ -748,57 +1090,29 @@ async function getSuggestion() {
 
 // 🧑‍🍳 GET AI CHEF RECIPES
 async function getRecipes() {
+  openChefBot();
+
   const userId = getCurrentUserId();
   if (!userId) {
     const div = document.getElementById("recipes");
     if (div) {
-      div.innerHTML = "<p>Please log in to see personalized recipes.</p>";
+      div.innerHTML = "<p>Please log in to use ChefBot.</p>";
     }
     return;
   }
 
   try {
     const div = document.getElementById("recipes");
-    div.innerHTML = "<p><i data-lucide=\"loader\"></i> AI Chef is crafting your personalized recipes...</p>";
-
-    console.log("Fetching AI recipes...");
-    const res = await fetch(`${API}/recipes/suggest?userId=${encodeURIComponent(userId)}`);
-
-    if (!res.ok) {
-      throw new Error("Server error: " + res.status);
+    if (div && !div.innerHTML.trim()) {
+      div.innerHTML = "<p class='chefbot-note'>ChefBot is ready. Follow the chat prompts to generate recipes.</p>";
     }
-
-    const data = await res.json();
-    console.log("AI Recipes data:", data);
-
-    div.innerHTML = "";
-
-    if (!data.recipes || data.recipes.length === 0) {
-      div.innerHTML = "<p style='color: var(--warning);'><i data-lucide=\"info\"></i> Add some food to your fridge first!</p>";
-      return;
-    }
-
-    // Show AI recipes
-    data.recipes.forEach(r => {
-      const el = document.createElement("div");
-      el.className = "recipe-card";
-
-      const ingList = r.ingredients ? r.ingredients.map(i => `<li>${i}</li>`).join("") : "None specified";
-
-      el.innerHTML = `
-        <h3>${r.title}</h3>
-        <p class="desc">${r.description || ""}</p>
-        <h4 style="margin-bottom: 8px; color: var(--text-main);">🥘 Ingredients from your fridge:</h4>
-        <ul style="margin-top: 0; margin-bottom: 16px;">${ingList}</ul>
-        <h4 style="margin-bottom: 8px; color: var(--text-main);">📜 Instructions:</h4>
-        <p style="white-space: pre-line; font-size: 0.95em; color: var(--text-muted);">${r.instructions || "Just mix everything and enjoy!"}</p>
-      `;
-      div.appendChild(el);
-    });
 
   } catch (error) {
     console.error("❌ Error fetching recipes:", error);
-    document.getElementById("recipes").innerHTML = `<p style='color:red;'>Error: ${error.message}</p>`;
+    const recipesDiv = document.getElementById("recipes");
+    if (recipesDiv) {
+      recipesDiv.innerHTML = `<p style='color:red;'>Error: ${error.message}</p>`;
+    }
   }
 }
 
@@ -850,6 +1164,9 @@ async function scanFridgeImage() {
 window.addFood = addFood;
 window.getFoods = getFoods;
 window.getRecipes = getRecipes;
+window.openChefBot = openChefBot;
+window.sendChefBotMessage = sendChefBotMessage;
+window.chooseChefOption = chooseChefOption;
 window.consumeFood = consumeFood;
 window.closeAlerts = closeAlerts;
 window.openAlerts = openAlerts;
